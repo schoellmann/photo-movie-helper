@@ -59,7 +59,7 @@ TMP_FILE="$INPUT_FOLDER/tmp_file"
 
 # Only use newest folder as input
 cd $INPUT_FOLDER/ 2>> $LOG
-DIR_INPUT="$(ls -tr | grep '$SD_COPY_FOLDER_PREFIX' | tail -n1)"
+DIR_INPUT="$(ls -tr | grep $SD_COPY_FOLDER_PREFIX | tail -n1)"
 echo "Input folder: $DIR_INPUT" >> $LOG
 echo "" >> $LOG
 
@@ -130,7 +130,7 @@ TMP_FILE="$INPUT_FOLDER/tmp_file"
 
 # Only use newest folder as input
 cd $INPUT_FOLDER/ 2>> $LOG
-DIR_INPUT="$(ls -tr | grep '$SD_COPY_FOLDER_PREFIX' | tail -n1)"
+DIR_INPUT="$(ls -tr | grep $SD_COPY_FOLDER_PREFIX | tail -n1)"
 echo "Input folder: $DIR_INPUT" >> $LOG
 echo "" >> $LOG
 
