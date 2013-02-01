@@ -39,11 +39,11 @@ echo "" >> $LOG
 
 # Create output folder if necessary
 if [ ! -d $PHOTO_FOLDER ] ; then
-  mkdir $PHOTO_FOLDER 2>> $LOG
+  mkdir -p $PHOTO_FOLDER 2>> $LOG
 fi
 
 if [ ! -d $VIDEO_FOLDER ] ; then
-  mkdir $VIDEO_FOLDER 2>> $LOG
+  mkdir -p $VIDEO_FOLDER 2>> $LOG
 fi
 
 
