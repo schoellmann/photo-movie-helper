@@ -62,7 +62,6 @@ if [ ! -d $VIDEO_FOLDER ] ; then
 fi
 
 
-
 # JPG #
 echo "PHOTOS" >> $LOG
 echo "" >> $LOG
@@ -130,7 +129,6 @@ rm -r $TMP_FOLDER 2>> $LOG
 rm $TMP_FILE 2>> $LOG
 
 # PHOTOS END
-
 
 
 # MTS/movie #
