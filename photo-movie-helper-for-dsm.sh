@@ -99,7 +99,7 @@ do
   # Move folder/ contents to target
   if [ ! -d $TARGET_DIR ] ; then
     echo "Moved content of folder: $TARGET_DIR" >> $LOG
-    mkdir $TARGET_DIR >> $LOG 2>&1 
+    mkdir -p $TARGET_DIR >> $LOG 2>&1 
     mv $TMP_FOLDER/$directory/* $TARGET_DIR/ 2>> $LOG
     # Add folder to index
     /usr/syno/bin/synoindex -A $TARGET_DIR >> $LOG 2>&1
@@ -169,7 +169,7 @@ do
   # Move folder/ contents to target
   if [ ! -d $TARGET_DIR ] ; then
     echo "Moved content of folder: $TARGET_DIR" >> $LOG
-    mkdir $TARGET_DIR >> $LOG 2>&1 
+    mkdir -p $TARGET_DIR >> $LOG 2>&1 
     mv $TMP_FOLDER/$directory/* $TARGET_DIR/ 2>> $LOG
     # Add folder to index
     /usr/syno/bin/synoindex -A $TARGET_DIR >> $LOG 2>&1
