@@ -35,6 +35,8 @@ PHOTO_FOLDER=/volume1/photo/Date
 # Video output folder
 VIDEO_FOLDER=/volume1/video/MTS
 
+# exiftool
+exiftool="perl /lib/Image-ExifTool-9.24/exiftool"
 #--------------------------------------------------
 
 beep() {
@@ -78,7 +80,7 @@ echo "Input folder: $DIR_INPUT" >> $LOG
 echo "" >> $LOG
 
 # File processing
-exiftool -P -r '-FileName<${DateTimeOriginal}.jpg' -d "$TMP_FOLDER/%Y/%Y%m%d/%Y-%m-%d_%Hh%Mm%Ss_%%f" "$DIR_INPUT" -ext jpg >> $LOG 2>&1
+$exiftool -P -r '-FileName<${DateTimeOriginal}.jpg' -d "$TMP_FOLDER/%Y/%Y%m%d/%Y-%m-%d_%Hh%Mm%Ss_%%f" "$DIR_INPUT" -ext jpg >> $LOG 2>&1
 
 # Get created directories (but exclude year folders via regex)
 cd $TMP_FOLDER/ 2>> $LOG
@@ -148,7 +150,7 @@ echo "Input folder: $DIR_INPUT" >> $LOG
 echo "" >> $LOG
 
 # File processing
-exiftool -P -r '-FileName<${DateTimeOriginal}.mts' -d "$TMP_FOLDER/%Y%m%d/%#Y-%m-%d_%Hh%Mm%Ss_%%f" "$DIR_INPUT" -ext mts >> $LOG 2>&1
+$exiftool -P -r '-FileName<${DateTimeOriginal}.mts' -d "$TMP_FOLDER/%Y%m%d/%#Y-%m-%d_%Hh%Mm%Ss_%%f" "$DIR_INPUT" -ext mts >> $LOG 2>&1
 
 # Get created directories (but exclude year folders via regex)
 cd $TMP_FOLDER/ 2>> $LOG
