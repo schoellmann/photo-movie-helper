@@ -2,4 +2,4 @@
 
 This is a simple bash script to automatically transfer, rename, move and index photos and movies from SD cards to a Synology DiskStation.
 
-For more information and an installation guide, please refer to this [blog post](http://www.netsinn.de/).
+For more information and an installation guide, please refer to this [blog post](http://www.netsinn.de/en/how-to-set-up-synologys-diskstation-to-automatically-transfer-rename-move-and-index-photos-movies/).
