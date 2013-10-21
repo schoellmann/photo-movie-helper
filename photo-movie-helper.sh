@@ -1,8 +1,8 @@
 #!/opt/bin/bash
 
-# This is a simple bash script to automatically transfer, rename, move and index
-# photos and movies from SD cards to a Synology DiskStation. Can be used on other
-# systems as well (without indexing).
+# This is a bash script to automatically transfer, rename, move and index
+# photos and movies from SD cards to a Synology DiskStation. Can be used on
+# other systems as well (without indexing).
 
 # Copyright (C) 2013, Ron Schoellmann
 # www.netsinn.de
@@ -53,7 +53,7 @@ FILENAME_SUFFIX=""
 
 # Folder name where DiskStation stores the content from the SD card afer copying it
 # not a path, only used for grep
-# only relevant if DO_SYNOLOGY_STUFF is true
+# only relevant if DO_SYNOLOGY_INDEXING is true
 SD_COPY_FOLDER_PREFIX=SDCopy
 
 # exiftool
@@ -67,15 +67,16 @@ SYNOUSB_SCRIPT="/usr/syno/bin/synousbcopy_renamed_by_ron"
 
 synoindex="$(which synoindex)"
 if [ ! -z "$synoindex" -a -f "$synoindex" ] ; then
-  DO_SYNOLOGY_STUFF=true  # indexing and SD copying
+  DO_SYNOLOGY_INDEXING=true  # indexing and SD copying
 else
-  DO_SYNOLOGY_STUFF=false
+  DO_SYNOLOGY_INDEXING=false
 fi
 
 # Flags
 VERBOSE=false
 KEEP_SOURCE=false
 MOVE_ONLY=false
+USE_SYNOUSB=false
 
 #--------------------------------------------------
 
@@ -84,15 +85,16 @@ echo_usage(){
   echo -e "
   Simple bash script to automatically transfer, rename, move and index photos and movies from SD cards to a Synology DiskStation (version $VERSION)
 
-  $(basename "$0") [-hvkm] [-d <true|false>] [-eoilpsfx <string>]
+  $(basename "$0") [-hvkmb] [-g <true|false>] [-eoilpsfx <string>]
 
     Options:
 
     -h  show this help text
     -v  verbose - show settings values
-    -k  keep source files (\"false\" for erasing, default: $KEEP_SOURCE)
+    -k  keep source files (copy files, \"false\" for erasing, default: $KEEP_SOURCE)
     -m  move only, don't rename (default: $MOVE_ONLY)
-    -d  do Synology DiskStation stuff - indexing and SD copying if needed (<true|false> default: $DO_SYNOLOGY_STUFF)
+    -b  use Synousb - copy from Synology SD/ USB (default: $USE_SYNOUSB)
+    -g  do Synology DiskStation indexing - indexing and SD copying if needed (<true|false> default: $DO_SYNOLOGY_INDEXING)
 
     -e  file extensions that exiftool should look for (comma separated, default: $EXTENSIONS)
     -o  set the output folder paths (comma separated & corresponding to extensions or 1 folder for all, 
@@ -124,7 +126,7 @@ error_show_usage(){
 # OPTIONS
 
 
-while getopts ":hvkmd:e:p:i:l:o:s:f:x:" option
+while getopts ":hvkmbg:e:p:i:l:o:s:f:x:" option
 do
   case "${option}"
   in
@@ -134,9 +136,10 @@ do
     v)  VERBOSE=true ;;
     k)  KEEP_SOURCE=true;;
     m)  MOVE_ONLY=true;;
-    d)  DO_SYNOLOGY_STUFF=${OPTARG}
-        if [[ $DO_SYNOLOGY_STUFF != true && $DO_SYNOLOGY_STUFF != false ]] ; then
-          error_show_usage "Option -d has to be \"true\" or \"false\""
+    b)  USE_SYNOUSB=true;;
+    g)  DO_SYNOLOGY_INDEXING=${OPTARG}
+        if [[ $DO_SYNOLOGY_INDEXING != true && $DO_SYNOLOGY_INDEXING != false ]] ; then
+          error_show_usage "Option -b has to be \"true\" or \"false\""
           exit 1
         fi;;
     e)  EXTENSIONS=${OPTARG};;
@@ -226,40 +229,47 @@ fi
 
 #-------------------------------------------------
 
+# Insert log info
+date_formatted=$(date +"%Y-%m-%d %H:%M:%S")
+echo -e "\n\n######### $date_formatted (v$VERSION) ##########\n\n" >> $LOG
+
+#-------------------------------------------------
+
 # SHOW OPTIONS
 
 if $VERBOSE ; then
-  printf "\n"
-  printf "%-35s " "Extensions and folder:"
+  printf "\n" | tee -a $LOG
+  printf "%-35s " "Extensions and folder:" | tee -a $LOG
 
   i=0
   for ext  in "${EXT_ARR[@]}"
   do
     if (( $i == 0 )) ; then
-      printf "%s\n" "$ext: ${OUTPUT_FOLDER_ARR[$i]}"
+      printf "%s\n" "$ext: ${OUTPUT_FOLDER_ARR[$i]}" | tee -a $LOG
     else
-      printf "%-35s %s\n" "" "$ext: ${OUTPUT_FOLDER_ARR[$i]}"
+      printf "%-35s %s\n" "" "$ext: ${OUTPUT_FOLDER_ARR[$i]}" | tee -a $LOG
     fi
     ((i=$i+1))
   done
 
-  printf "%-35s %s\n" "Input folder:" "$INPUT_FOLDER"
-  printf "%-35s %s\n" "Log file:" "$LOG"
-  printf "%-35s %s\n" "Additional Exiftool parameters:" "$EXIFTOOL_PARAMS"
-  printf "%-35s %s\n" "File subfolder:" "$FILE_SUBFOLDER"
-  printf "%-35s %s\n" "File name format:" "$FILENAME_FORMAT"
-  printf "%-35s %s\n" "File name suffix:" "$FILENAME_SUFFIX"
-  printf "%-35s %s\n" "Keep source:" "$KEEP_SOURCE"
-  printf "%-35s %s\n" "Move only:" "$MOVE_ONLY"
-  printf "%-35s %s\n" "Do Synology DiskStation stuff:" "$DO_SYNOLOGY_STUFF"
-  printf "%-35s %s\n" "Script version:" "$VERSION"
-  printf "\n"
+  printf "%-35s %s\n" "Input folder:" "$INPUT_FOLDER" | tee -a $LOG
+  printf "%-35s %s\n" "Log file:" "$LOG" | tee -a $LOG
+  printf "%-35s %s\n" "Additional Exiftool parameters:" "$EXIFTOOL_PARAMS" | tee -a $LOG
+  printf "%-35s %s\n" "File subfolder:" "$FILE_SUBFOLDER" | tee -a $LOG
+  printf "%-35s %s\n" "File name format:" "$FILENAME_FORMAT" | tee -a $LOG
+  printf "%-35s %s\n" "File name suffix:" "$FILENAME_SUFFIX" | tee -a $LOG
+  printf "%-35s %s\n" "Keep source (copy files):" "$KEEP_SOURCE" | tee -a $LOG
+  printf "%-35s %s\n" "Move only:" "$MOVE_ONLY" | tee -a $LOG
+  printf "%-35s %s\n" "Do Synology DiskStation indexing:" "$DO_SYNOLOGY_INDEXING" | tee -a $LOG
+  printf "%-35s %s\n" "Copy from Synology SD/ USB:" "$USE_SYNOUSB" | tee -a $LOG
+  printf "%-35s %s\n" "Script version:" "$VERSION" | tee -a $LOG
+  printf "\n" | tee -a $LOG
 fi
 
 #-------------------------------------------------
 
 beep() {
-  if $DO_SYNOLOGY_STUFF ; then
+  if $DO_SYNOLOGY_INDEXING ; then
     echo 2 > /dev/ttyS1;
   fi
 }
@@ -272,7 +282,7 @@ process_files()
   FILE_EXTENSION=$1
   TARGET_FOLDER=$2
   
-  echo -e "########## $FILE_EXTENSION ##########\n" >> $LOG
+  echo -e "\n########## $FILE_EXTENSION ##########\n" >> $LOG
   
   # Create tmp folder to put files into
   TMP_FOLDER="${TARGET_FOLDER}/tmp_${FILE_EXTENSION}_$(date +"%Y-%m-%d")"
@@ -284,7 +294,7 @@ process_files()
     exit 1
   fi
   
-  if $DO_SYNOLOGY_STUFF ; then
+  if $USE_SYNOUSB && $DO_SYNOLOGY_INDEXING ; then
   
     # Only use newest folder as input
     cd $INPUT_FOLDER/ 2>> $LOG
@@ -329,12 +339,12 @@ process_files()
   IFS=$(echo -en "\n\b") FILES="$(find * -type f)"
     
   if $VERBOSE; then
-    printf "Processing these $FILE_EXTENSION files:\n" 
+    printf "Processing these $FILE_EXTENSION files:\n" | tee -a $LOG
     for file_w_subpath in "${FILES[@]}"
     do
-      printf "  %s\n" $file_w_subpath
+      printf "  %s\n" $file_w_subpath | tee -a $LOG
     done
-    printf "\n"
+    printf "\n" | tee -a $LOG
   fi
 
   for file_w_subpath in ${FILES[*]} ## NOT "${FILES[@]}"
@@ -353,7 +363,7 @@ process_files()
         fi
 
         # Add folder to index
-        if $DO_SYNOLOGY_STUFF ; then
+        if $DO_SYNOLOGY_INDEXING ; then
           $synoindex -A $TARGET_PATH >> $LOG 2>&1
         fi
       fi
@@ -368,7 +378,7 @@ process_files()
         fi
 
         # Add file to index
-        if $DO_SYNOLOGY_STUFF ; then
+        if $DO_SYNOLOGY_INDEXING ; then
           $synoindex -a $TARGET_FOLDER/$file_w_subpath >> $LOG 2>&1
         fi
 
@@ -405,12 +415,8 @@ process_files()
 
 STARTTIME=$(date +%s)
 
-# Insert log info
-date_formatted=$(date +"%Y-%m-%d %H:%M:%S")
-echo -e "\n\n######### $date_formatted (v$VERSION) ##########\n\n" >> $LOG
-
 # Call original files
-if $DO_SYNOLOGY_STUFF; then
+if $USE_SYNOUSB ; then
   $SYNOUSB_SCRIPT >> $LOG
 fi
 
@@ -421,7 +427,7 @@ do
     mkdir -p $folder 2>> $LOG
 
     # Add folder to index
-    if $DO_SYNOLOGY_STUFF ; then
+    if $DO_SYNOLOGY_INDEXING ; then
       $synoindex -A $folder >> $LOG 2>&1
     fi
   fi
@@ -438,7 +444,7 @@ do
 done
 
 # Re-index input folder
-if $DO_SYNOLOGY_STUFF; then
+if $DO_SYNOLOGY_INDEXING; then
   $synoindex -R $INPUT_FOLDER >> $LOG 2>&1
 fi
 
