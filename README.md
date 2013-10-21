@@ -16,7 +16,8 @@ Usage:
 >    -v  verbose - show settings values
 >    -k  keep source files ("false" for erasing)
 >    -m  move only, don't rename
->    -d  do Synology DiskStation stuff - indexing and SD copying if needed (<true|false>)
+>    -b  use Synousb - copy from Synology SD/ USB
+>    -g  do Synology DiskStation indexing - indexing and SD copying if needed (<true|false>)
 >
 >    -e  file extensions that exiftool should look for (comma separated)
 >    -o  set the output folder paths (comma separated & corresponding to extensions or 1 folder for all)
