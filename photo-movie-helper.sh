@@ -22,7 +22,7 @@
 
 #--------------------------------------------------
 
-VERSION="2.0.0"
+VERSION="2.0.1"
 
 # DEFAULT VALUES
 
@@ -59,7 +59,7 @@ SD_COPY_FOLDER_PREFIX=SDCopy
 # exiftool
 exiftool="$(which exiftool)"
 if [ ! -f "$exiftool" ] ; then
-  exiftool="/lib/Image-ExifTool-9.24/exiftool"
+  exiftool="/lib/exiftool-folder/exiftool" # symlink to /lib/Image-ExifTool-9.xx/"
 fi
 
 # Renamed synousbcopy script
