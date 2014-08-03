@@ -22,7 +22,7 @@
 
 #--------------------------------------------------
 
-VERSION="2.0.1"
+VERSION="2.0.2"
 
 # DEFAULT VALUES
 
@@ -222,8 +222,13 @@ if (( ${#EXT_ARR[@]} == 0 )) ; then
   exit 1
 fi
 
-if [ -z $INPUT_FOLDER  ] ; then
+if [ -z "$INPUT_FOLDER" ] ; then
   error_show_usage "No input folder (-i) defined."
+  exit 1
+fi
+
+if [ ! -d "$INPUT_FOLDER" ] ; then
+  error_show_usage "Input folder (-i) does not exist."
   exit 1
 fi
 
@@ -289,7 +294,7 @@ process_files()
   
   mkdir $TMP_FOLDER 2>> $LOG
 
-  if [ ! -d $TMP_FOLDER ] ; then
+  if [ ! -d "$TMP_FOLDER" ] ; then
     error "Could not create tmp folder for $FILE_EXTENSION" >> $LOG
     exit 1
   fi
@@ -300,7 +305,7 @@ process_files()
     cd $INPUT_FOLDER/ 2>> $LOG
     DIR_INPUT="$(ls -tr | grep $SD_COPY_FOLDER_PREFIX | tail -n1)"
   
-    if [ ! -d $DIR_INPUT ] ; then
+    if [ ! -d "$DIR_INPUT" ] ; then
       error "No input folder found." >> $LOG
       exit 1
     fi
@@ -356,7 +361,7 @@ process_files()
     if [ "$(ls -A $TMP_FOLDER/$DIRECTORY)" ] ; then  ## "$(ls -A $DIR)" checks if dir is not empty
 
       # Create folder if needed
-      if [ ! -d $TARGET_PATH ] ; then
+      if [ ! -d "$TARGET_PATH" ] ; then
         mkdir -p $TARGET_PATH >> $LOG 2>&1 
         if [ $? -eq 0 ]; then
           echo "Created directory: $TARGET_PATH" >> $LOG
@@ -369,7 +374,7 @@ process_files()
       fi
 
       # Check files and mv/ add individually
-      if [ ! -f $TARGET_FOLDER/$file_w_subpath ]; then 
+      if [ ! -f "$TARGET_FOLDER/$file_w_subpath" ]; then 
         mv $TMP_FOLDER/$file_w_subpath $TARGET_PATH/ 2>> $LOG
         if [ $? -eq 0 ]; then
           echo "Moved file: $FILE to $TARGET_PATH" >> $LOG
@@ -401,7 +406,7 @@ process_files()
 
     for dir in ${DIRS[*]}
     do
-      [ -d $dir ] && [ -z "`find $dir -type f`" ] && rm -r $dir
+      [ -d "$dir" ] && [ -z "`find $dir -type f`" ] && rm -r $dir
     done
   fi
 
@@ -423,7 +428,7 @@ fi
 # Create output folder if necessary
 for folder in "${OUTPUT_FOLDER_ARR[@]}"
 do
-  if [ ! -d $folder ] ; then
+  if [ ! -d "$folder" ] ; then
     mkdir -p $folder 2>> $LOG
 
     # Add folder to index
@@ -436,7 +441,7 @@ done
 i=0
 for ext in "${EXT_ARR[@]}"
 do
-   if [ $ext != "" ] ; then
+   if [ "$ext" != "" ] ; then
      process_files "$ext" "${OUTPUT_FOLDER_ARR[$i]}"
    fi
   ((i=$i+1))
